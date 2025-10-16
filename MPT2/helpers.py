@@ -38,6 +38,32 @@ def set_style() -> None:
     sns.set_palette("husl")
 
 
+def styled_table(
+    df: pd.DataFrame,
+    *,
+    caption: Optional[str] = None,
+    precision: int = 3,
+) -> pd.io.formats.style.Styler:
+    """Return a lightly themed styler for consistent table output in notebooks."""
+
+    formatter = {col: f"{{:.{precision}f}}" for col in df.select_dtypes(include=[np.number]).columns}
+    styler = df.style.format(formatter)
+    if caption:
+        styler = styler.set_caption(caption)
+
+    return (
+        styler.set_table_styles(
+            [
+                {"selector": "th", "props": "text-align: center;"},
+                {"selector": "td", "props": "text-align: right;"},
+                {"selector": "caption", "props": "caption-side: top; font-weight: bold;"},
+            ],
+            overwrite=False,
+        )
+        .set_properties(**{"font-size": "10pt"})
+    )
+
+
 # -----------------------------
 # Data utilities
 # -----------------------------
