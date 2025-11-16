@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:15.5
+    container_name: finance-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: ${PGDATA}
+      TZ: ${TZ}
+      LANG: ${LANG:-en_US.UTF-8}
+      LC_ALL: ${LC_ALL:-en_US.UTF-8}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+
+  pgadmin:
+    image: dpage/pgadmin4:8.5
+    container_name: finance-pgadmin
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "${PGADMIN_LISTEN_PORT:-5050}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-changeMe123}
+      TZ: ${TZ}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    profiles: [pgadmin]
+
+volumes:
+  pg_data:
+  pgadmin_data:
