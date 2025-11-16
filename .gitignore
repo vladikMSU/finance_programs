@@ -2,3 +2,7 @@ data/
 *.pyc
 *.txt
 *.md
+!README.md
+!AGENTS.md
+.env
+docker/init/.gitkeep
