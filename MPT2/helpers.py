@@ -43,11 +43,29 @@ def styled_table(
     *,
     caption: Optional[str] = None,
     precision: int = 3,
-) -> pd.io.formats.style.Styler:
+) -> "pd.io.formats.style.Styler":
     """Return a lightly themed styler for consistent table output in notebooks."""
 
-    formatter = {col: f"{{:.{precision}f}}" for col in df.select_dtypes(include=[np.number]).columns}
-    styler = df.style.format(formatter)
+    table = df.copy()
+
+    if not table.index.is_unique:
+        index_name = table.index.name or "index"
+        table = table.reset_index().rename(columns={"index": index_name})
+
+    if not table.columns.is_unique:
+        counts: Dict[str, int] = {}
+        unique_columns = []
+        for col in table.columns:
+            if col in counts:
+                counts[col] += 1
+                unique_columns.append(f"{col}_{counts[col]}")
+            else:
+                counts[col] = 0
+                unique_columns.append(col)
+        table.columns = unique_columns
+
+    formatter = {col: f"{{:.{precision}f}}" for col in table.select_dtypes(include=[np.number]).columns}
+    styler = table.style.format(formatter)
     if caption:
         styler = styler.set_caption(caption)
 
